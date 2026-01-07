@@ -1,0 +1,16 @@
+# 1. Ignore Python Cache
+__pycache__ /
+*. pyc
+# 2. Ignore Virtual Environments
+venv /
+. env
+# 3. Ignore Data and Models ( Too large for Git )
+data /
+experiments / results /
+*. pt
+*. ckpt
+*. h5
+# 4. Ignore Secrets ( Security Risk !)
+. env
+keys . json
+wandb /
