@@ -149,3 +149,7 @@ Virtual environments, data, models and secrets are important, because they can b
 * Should you include information about how to access Snellius and load the necessary software in your README.md?
 
 For now maybe not, because this is for my own assignment but, otherwise it should not be too specific for my own use case. It should be general enough for other users to understand how load the necessary software, but it should not contain too detailed information about how to accces Snellius.
+
+### 4. Paste the output of git log –-oneline showing your first commit(s). The commit messages and timestamps will be verified against GitHub’s records.
+
+![](/images/screenshot-vsc-terminal-git-log.png)
