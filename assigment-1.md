@@ -160,34 +160,120 @@
 
 
 ## Question 4: Your First Batch Job (Slurm)
-1. **Files Provided:** [List your .sh, .py, and output.txt files included in zip]
-2. **Job ID & Stats:** `[Paste output of sacct command]`
-3. **Submission Problem:** [Describe error and diagnosis]
-4. **Verification:** [Proof that script ran successfully]
-5. **Login vs Batch:** [Explain the difference]
-6. **Why Clusters?:** 
+1. **Files Provided:**
+    - "first_job.sh"
+    - "hello_world_18154702.out"
+2. **Job ID & Stats:**
+
+   ![](assets/screenshot-vsc-terminal-sacct.png)
+
+3. **Submission Problem:** 
+
+    First, I loaded de modules from modules.sh, but that importing matplotlib gave an error. I was not even using matplotlob in my script, so I decided to only load the 2025 and python modules. I also forgot to save my .sh file before submitting, so they did not run the first few times.
+
+4. **Verification:**
+
+    ![](assets/screenshot-batch-output.png)
+
+5. **Login vs Batch:**
+
+    The login node is used for interactive tasks, like editing and does not have compute power for heavy tasks. The batch nodes can be used for heavy computations, like training models. They do have acces to more CPU/GPU power and memory.
+
+6. **Why Clusters?:**
+
+    So we can efficiently make use of more compute power than our local machine has and we can also run multiple jobs in parallel on different nodes to make, for example, training faster.
 ---
 
 ## Question 5: Reflection & Conceptual Understanding
 1. **The Filesystem:**
-   - **I/O Performance:** [Why 100k small files are bad]
-   - **Mitigation Strategies:** [Strategy 1] and [Strategy 2]
-   - **Dataset Versioning:** [How to handle GB/PB datasets]
-2. **Reproducibility:** [3 specific causes of different results + MLOps fixes]
-3. **Conda vs venv vs uv:** [Pros/Cons of each for Snellius]
+
+    I answered the questions below using the syllabus.
+
+   - **I/O Performance:** 
+   
+    In GPFS, each small file requires a metadata lookup and distributed locking. So, when there are 100,000 small files, there are a lot of these operations, which slows down the performance significantly.
+
+   - **Mitigation Strategies:**
+
+    To migrate this problem, it is better to use fewer large files instead of many small files. Another strategy is to use the local storage on the compute nodes, because they have a higher IOPS.
+    
+   - **Dataset Versioning:**
+
+    We can version control datasets via metadata files that contain hashes and versions for each file and we can track these metadata files in Git. This way, we do not have to store the entire dataset in Git, but we can still track changes to it.
+
+2. **Reproducibility:** 
+
+    The results may differ because of different software environments, different hardware and different random shuffles. To prevent these issues, we should use virtual environments, we should document the hardware used and we should fix the random seeds. This way we can make the results reproducible.
+
+3. **Conda vs venv vs uv:**
+    - **Conda:**
+    
+     The pro of Conda is that it is not only used for Python packages, but also non-python software. However, creating environments with Conda can be slow because it creates a lot of very small files, which is not ideal for GPFS filesystems. It is also platform- and solver-dependent, which makes it less scalable. Conda also has poor integration with environment modules and does not use the optimal CUDA installation on Snellius.
+    
+    - **venv:**
+    
+     Python venv is build-in and requires no additional installation. It also avoids dependency conflicts and allows us to install packages locally, since we do not have root acces. It is also realy good for reproducibility, using requirements.txt files. The cons are that is only works with Python packages and it is slower than uv.
+    
+    - **uv:**
+    
+     Astral uv is significantly faster than venv and conda, due to more efficient file operations. It also has fewer file operations, which is better for Snellius' filesystem. It replaces both venv and pip, so we do not have to use multiple tools. The only con is that it is new and not as widely used as venv and conda. It is also only focused on Python packages.
 
 ---
 
 ## Question 6: Package Integrity
-1. **ModuleNotFoundError:** [Describe any PYTHONPATH or __init__.py issues]
-2. **Import Abstraction:** [Why import from ml_core.data vs ml_core.data.pcam?]
-3. **Pytest Result:** `[Paste output of pytest tests/test_imports.py]`
+1. **ModuleNotFoundError:**
+
+    I did not get any issues, because I already installed the depencies using "uv pip install -e ."
+
+2. **Import Abstraction:**
+
+    ml_core.data is more general and can be used for multiple datasets, while importing ml_core.data.pcam is specific to the PCAM dataset.
+
+3. **Pytest Result:**
+
+    ![](assets/screenshot-vsc-terminal-pytest.png)
+
+    I see that the test passed successfully.
 
 ---
 
 ## Question 7: The Data Pipeline
-1. **Implementation:** `[Paste __getitem__ method]`
-2. **Local Pytest:** `[Paste output of pytest tests/test_pcam_pipeline.py]`
+1. **Implementation:**
+
+   ```python
+   def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
+   # TODO: Implement data retrieval
+   # 1. Read data at idx
+   # 2. Convert to uint8 (for PIL compatibility if using transforms)
+   # 3. Apply transforms if they exist
+   # 4. Return tensor image and label (as long)
+        
+   # Read specific index
+   real_idx = self.indices[idx]
+   image = self.x_data[real_idx]
+   label = self.y_data[real_idx][0]
+
+   # Ensure uint8 for PIL compatibility
+   image = image.astype(np.uint8)
+
+   if self.transform:
+      image = self.transform(image)
+   
+   # CrossEntropyLoss requires Long (int64)
+   return image, torch.tensor(label, dtype=torch.long).squeeze()
+   ```
+   The PCAM dataset is accessed using h5py and lazily loaded. Samples are accessed trhough an index list "self.indices" to allow filtering. The image data is converted to uint8 for compatibility with PIL.
+
+2. **Local Pytest:**
+
+   ![](assets/screenshot-vsc-terminal-data-loader-pytest1.png)
+   ![](assets/screenshot-vsc-terminal-data-loader-pytest2.png)
+   ![](assets/screenshot-vsc-terminal-data-loader-pytest3.png)
+   ![](assets/screenshot-vsc-terminal-data-loader-pytest4.png)
+   ![](assets/screenshot-vsc-terminal-data-loader-pytest5.png)
+
+   After a few attempts, I passed all the tests. First, I had to add a "filter_data" parameter to the PCAMDataset and added a "self.indices" list to be able to filter the data. I also did not use the correct filenames for the validation sets, so I changed those. Finally, I still had to remove shuffling and changed it to use the sampler in the DataLoader.
+   
 3. **CI Pipeline:**
    - **Screenshot:** ![GitHub Actions Tab](assets/github_actions.png)
    - **Reflection:** [CI vs Local discrepancies]
