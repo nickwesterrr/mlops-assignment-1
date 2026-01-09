@@ -9,7 +9,7 @@ Software is managed using environment modules and a Python virtual environment.
 
 ```bash
 # Load required modules
-source source /home/"user"/modules.sh
+source /home/"user"/modules.sh
 
 # Create and activate a virtual environment
 uv venv venv
