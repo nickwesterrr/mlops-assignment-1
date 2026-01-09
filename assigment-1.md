@@ -296,15 +296,33 @@
    Just by looking at my loader file, I don't know the exact number of positive samples without the WeightedRandomSampler. With the sampler, I can expect to have an equal number of positive and negative samples in each epoch, so 16 positive samples with a batch size of 32.
 
 5. **EDA Plots:**
-   - ![PCAM Intensity Outliers](assets/pcam.png)
-   - [Additional plots as requested]
+   - ![PCAM Intensity Outliers](assets/pcam.jpg)
+   - ![](assets/pcam_class_balance.png)
 
 ---
 
 ## Question 8: Model Implementation (MLP)
-1. **Forward Pass:** [Error details + dimension calculation for (3, 96, 96)]
-2. **Weight Updates:** [Why check backprop explicitly?]
+1. **Forward Pass:**
+
+I succesfully passed the test without any errors.
+
+I determined the input dimension by multiplying the dimensions of the input image:
+```python
+input_dim = 1
+   for d in input_shape:
+      input_dim *= d
+
+# input_shape = (3, 96, 96)
+# input_dim = 3 * 96 * 96 = 27648
+```
+
+2. **Weight Updates:**
+
+It is important to check that the weights actually get updated during training, because by only checking if the loss is a number, we cannot be sure that the model is learning with backpropagation. If the weights are not updated, the model will not learn and improve.
+
 3. **Test Output:** `[Paste output of pytest on the relevant file]`
+
+![](assets/screenshot-vsc-terminal-nn-test.png)
 
 ---
 
