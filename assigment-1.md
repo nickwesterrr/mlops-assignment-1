@@ -275,9 +275,26 @@
    After a few attempts, I passed all the tests. First, I had to add a "filter_data" parameter to the PCAMDataset and added a "self.indices" list to be able to filter the data. I also did not use the correct filenames for the validation sets, so I changed those. Finally, I still had to remove shuffling and changed it to use the sampler in the DataLoader.
    
 3. **CI Pipeline:**
-   - **Screenshot:** ![GitHub Actions Tab](assets/github_actions.png)
-   - **Reflection:** [CI vs Local discrepancies]
-4. **Sampling Math:** [Average positives with vs without WeightedRandomSampler]
+   - **Screenshot:**
+
+   When I ran the CI Pipeline, both "Lint Check" and "Run Tests" failed. I tried to fix the erros with automatic Ruff fixes, but some errors remained. These errors occur in files that I haven't modified yet, so I will fix them later when I work on those files.
+
+   ![](assets/screenshot-github-ci-lint-error.png)
+   ![](assets/screenshot-github-ci-test-error.png)
+
+   After "ruff --fix":
+
+   ![](assets/screenshot-github-ci-lint-error2.png)
+   ![](assets/screenshot-github-ci-test-error2.png)
+
+   - **Reflection:**
+
+   This might happen in a real-world MLOps setting, because the CI pipeline is stricter and checks for linting and test errors on every commit. If there are errors in any part of the codebase, the pipeline will fail, even if the changes made in the commit are correct. 
+
+4. **Sampling Math:**
+
+   Just by looking at my loader file, I don't know the exact number of positive samples without the WeightedRandomSampler. With the sampler, I can expect to have an equal number of positive and negative samples in each epoch, so 16 positive samples with a batch size of 32.
+
 5. **EDA Plots:**
    - ![PCAM Intensity Outliers](assets/pcam.png)
    - [Additional plots as requested]
